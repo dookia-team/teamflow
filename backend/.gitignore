@@ -1,12 +1,19 @@
+# Gradle
 .gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
 .idea/
 *.iml
 .vscode/
+
+# Java 컴파일 산출물
 *.class
-*.jar
+
+# 환경 변수 / 로컬 파일
 .env
 *.local
+
+# OS
 .DS_Store
 Thumbs.db
