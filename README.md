@@ -7,7 +7,7 @@
 ```
 teamflow/
 ├── frontend/              # 프론트엔드 (React + TypeScript + Tailwind CSS)
-├── backend/               # 백엔드 (Node.js + Express + PostgreSQL)
+├── backend/               # 백엔드 (Spring Boot + Java + PostgreSQL)
 ├── docs/
 │   └── planning/          # 기획 문서 (요구사항 명세서, 와이어프레임)
 ├── .claude/               # Claude Code 설정 (공용)
