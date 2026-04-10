@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Claude Code / OMC 런타임 상태
+.claude/settings.local.json
+.omc/
+
+# 환경 변수
+.env
+.env.local
+*.local
