@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -113,9 +112,9 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /api/auth/logout → 204 + 만료 Set-Cookie")
+    @DisplayName("POST /api/auth/logout → 204 + 만료 Set-Cookie")
     void logout_returns204AndExpiresCookie() throws Exception {
-        mockMvc.perform(delete("/api/auth/logout")
+        mockMvc.perform(post("/api/auth/logout")
                 .cookie(new jakarta.servlet.http.Cookie("teamflow_rt", "any")))
             .andExpect(status().isNoContent())
             .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")));

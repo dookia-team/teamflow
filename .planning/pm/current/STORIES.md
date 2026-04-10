@@ -40,7 +40,7 @@
 **So that** 다른 사람이 내 계정에 접근할 수 없다
 
 ### 인수 기준
-- [ ] 로그아웃 버튼 클릭 → DELETE /api/auth/logout 호출
+- [ ] 로그아웃 버튼 클릭 → POST /api/auth/logout 호출
 - [ ] DB에서 해당 Refresh Token 삭제
 - [ ] Cookie에서 teamflow_rt 제거
 - [ ] 프론트 authStore 초기화 → 로그인 페이지로 이동

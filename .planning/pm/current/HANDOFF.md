@@ -28,7 +28,7 @@
 ```
 POST   /api/auth/google     → { accessToken, user, isNewUser } + Set-Cookie
 POST   /api/auth/refresh    → { accessToken } + Set-Cookie (Cookie 자동 전송)
-DELETE /api/auth/logout      → 204 No Content + Cookie 삭제
+POST   /api/auth/logout      → 204 No Content + Cookie 삭제
 ```
 
 ### 워크스페이스 API

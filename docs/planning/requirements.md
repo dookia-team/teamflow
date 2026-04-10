@@ -345,7 +345,7 @@ Workspace
 ```
 POST   /api/auth/google          # Google OAuth 콜백
 POST   /api/auth/refresh          # 토큰 갱신
-DELETE /api/auth/logout           # 로그아웃
+POST   /api/auth/logout           # 로그아웃
 ```
 
 ### Workspace

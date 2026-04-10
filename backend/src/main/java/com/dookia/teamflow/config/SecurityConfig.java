@@ -26,7 +26,7 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/auth/google", "/api/auth/refresh").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/google", "/api/auth/refresh", "/api/auth/logout").permitAll()
                 .requestMatchers("/actuator/**", "/error").permitAll()
                 // springdoc-openapi: Swagger UI / OpenAPI JSON 공개 (운영 환경에선 프로파일로 제한 권장)
                 .requestMatchers(

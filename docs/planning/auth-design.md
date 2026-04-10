@@ -266,7 +266,7 @@ DELETE FROM refresh_tokens WHERE expires_at < NOW();
 | 401 | `AUTH_TOKEN_INVALID` | DB에 존재하지 않음 |
 | 401 | `AUTH_TOKEN_REUSED` | Replay 감지 (family 전체 무효화) |
 
-### 4.3 DELETE /api/auth/logout — 로그아웃
+### 4.3 POST /api/auth/logout — 로그아웃
 
 **Request:** `Authorization: Bearer {accessToken}` + Cookie
 
@@ -442,7 +442,7 @@ API 요청 → Authorization: Bearer 헤더 추가 → 서버 응답
 |-----------|------|
 | POST /api/auth/google | IP당 10회/분 |
 | POST /api/auth/refresh | IP당 30회/분 |
-| DELETE /api/auth/logout | 사용자당 10회/분 |
+| POST /api/auth/logout | 사용자당 10회/분 |
 
 Redis 기반 bucket4j 또는 resilience4j로 구현.
 

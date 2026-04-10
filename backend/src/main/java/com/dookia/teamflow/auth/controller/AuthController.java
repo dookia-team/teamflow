@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +24,9 @@ import java.time.Duration;
 
 /**
  * 인증 엔드포인트. auth-design.md §4 를 따른다.
- *  - POST   /api/auth/google    로그인/회원가입
- *  - POST   /api/auth/refresh   토큰 갱신 (Rotation)
- *  - DELETE /api/auth/logout    로그아웃
+ *  - POST /api/auth/google    로그인/회원가입
+ *  - POST /api/auth/refresh   토큰 갱신 (Rotation)
+ *  - POST /api/auth/logout    로그아웃
  */
 @Tag(name = "Auth", description = "Google OAuth 로그인 · 토큰 갱신 · 로그아웃")
 @RestController
@@ -102,7 +101,7 @@ public class AuthController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "로그아웃 처리 완료")
     })
-    @DeleteMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(
         @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken
     ) {
