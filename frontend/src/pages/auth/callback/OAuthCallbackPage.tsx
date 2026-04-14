@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore, authApi } from '@/features/auth'
 import { env } from '@/shared/config/env'
+import { Spinner } from '@/shared/ui'
 
 export function OAuthCallbackPage() {
   const [searchParams] = useSearchParams()
@@ -28,7 +29,7 @@ export function OAuthCallbackPage() {
       .loginWithGoogle(code, env.googleRedirectUri)
       .then(({ data }) => {
         setAuth(data.accessToken, data.user)
-        navigate('/projects', { replace: true })
+        navigate('/projects', { replace: true, state: { isNewUser: data.isNewUser } })
       })
       .catch(() => {
         navigate('/login', { replace: true })
@@ -36,10 +37,11 @@ export function OAuthCallbackPage() {
   }, [searchParams, navigate, setAuth])
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">로그인 처리 중...</p>
+        <Spinner size="lg" className="mx-auto mb-4" />
+        <p className="text-lg font-semibold text-gray-500">로그인 처리 중...</p>
+        <p className="text-sm text-gray-400 mt-2">잠시만 기다려주세요. Google 계정을 확인하고 있습니다.</p>
       </div>
     </div>
   )

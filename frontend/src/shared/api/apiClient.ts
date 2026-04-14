@@ -29,12 +29,25 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = []
 }
 
+// ApiResponse<T> 자동 언래핑: { success, data, message, timestamp } → data만 추출
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data && typeof response.data.success === 'boolean') {
+      response.data = response.data.data
+    }
+    return response
+  },
   async (error) => {
     const originalRequest = error.config
 
     if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error)
+    }
+
+    // AUTH_TOKEN_REUSED: 토큰 도난 감지 → 즉시 로그아웃
+    if (error.response?.data?.error?.code === 'AUTH_TOKEN_REUSED') {
+      useAuthStore.getState().clearAuth()
+      window.location.href = '/login'
       return Promise.reject(error)
     }
 

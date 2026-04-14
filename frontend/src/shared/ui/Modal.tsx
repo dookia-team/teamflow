@@ -40,7 +40,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     >
       <div
         className={twMerge(
-          'bg-white rounded-2xl shadow-lg w-full max-w-md mx-4 p-6',
+          'bg-white rounded-modal shadow-xl w-full mx-4 p-8',
           className,
         )}
         role="dialog"

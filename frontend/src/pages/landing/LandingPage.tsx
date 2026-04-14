@@ -1,51 +1,112 @@
-import { GoogleLoginButton } from '@/features/auth'
+import { Link } from 'react-router-dom'
+import { Button } from '@/shared/ui'
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-white">
+    <div className="min-h-screen bg-[#0F172A] text-white">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-8 py-5">
-        <span className="text-xl font-extrabold">
-          Team<span className="text-indigo-400">Flow</span>
+      <nav className="flex items-center justify-between px-fluid-page-x py-6">
+        <span className="text-2xl font-bold">
+          Team<span className="text-primary-400">Flow</span>
         </span>
-        <a
-          href="/login"
-          className="px-5 py-2 text-sm font-semibold border border-white/30 rounded-lg hover:bg-white/10 transition-colors"
-        >
-          로그인
-        </a>
+        <Link to="/login">
+          <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">
+            로그인
+          </Button>
+        </Link>
       </nav>
 
-      {/* Hero */}
-      <main className="flex flex-col items-center justify-center text-center px-6 pt-32 pb-20">
-        <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6">
-          문서 + 이슈 + 채팅,
-          <br />
-          <span className="text-indigo-400">하나로 끝.</span>
-        </h1>
-        <p className="text-lg text-white/60 max-w-lg mb-10">
-          Notion, Jira, Slack을 넘나드는 컨텍스트 스위칭은 이제 그만.
-          <br />
-          TeamFlow에서 팀의 모든 협업을 한 곳에서.
-        </p>
-        <GoogleLoginButton />
+      {/* Hero - 2 Column Layout */}
+      <main className="flex flex-col lg:flex-row items-center lg:justify-between px-fluid-page-x pt-fluid-section pb-20 gap-12 lg:gap-16">
+        {/* Left: Text */}
+        <div className="flex-1 max-w-xl text-center lg:text-left">
+          <h1 className="text-fluid-display font-bold leading-tight mb-6">
+            팀의 협업을
+            <br />
+            <span className="text-primary-400">하나로 연결합니다.</span>
+          </h1>
+          <p className="text-lg text-slate-400 mb-10 leading-relaxed">
+            워크스페이스 기반 프로젝트 관리로 팀의 생산성을 극대화하세요.
+            <br />
+            실시간 협업, 일정 관리, 업무 추적을 하나의 플랫폼에서.
+          </p>
+          <Link to="/login">
+            <Button variant="primary" size="lg">
+              Google로 시작하기
+            </Button>
+          </Link>
+        </div>
 
-        {/* Features */}
-        <div className="flex gap-6 mt-16 flex-wrap justify-center">
-          {[
-            { icon: '📄', title: '문서', desc: '블록 에디터로 함께 쓰는 문서' },
-            { icon: '▦', title: '이슈', desc: '칸반 보드로 일감 관리' },
-            { icon: '💬', title: '채팅', desc: '실시간 메시지로 빠른 소통' },
-          ].map((feat) => (
-            <div
-              key={feat.title}
-              className="w-48 p-5 bg-white/5 border border-white/10 rounded-2xl text-left"
-            >
-              <div className="text-2xl mb-3">{feat.icon}</div>
-              <h3 className="font-semibold mb-1">{feat.title}</h3>
-              <p className="text-sm text-white/50">{feat.desc}</p>
+        {/* Right: App Preview Mockup */}
+        <div className="flex-1 max-w-[620px] hidden md:block">
+          <div className="bg-[#1E293B] rounded-2xl border border-[#334155] shadow-[0_20px_40px_rgba(99,102,241,0.2)] overflow-hidden">
+            <div className="flex">
+              {/* Sidebar */}
+              <div className="w-[140px] bg-[#0F172A] p-4 space-y-3">
+                <div className="text-primary-400 font-bold text-sm mb-4">TF</div>
+                <div className="h-8 bg-primary-600 rounded-lg" />
+                <div className="h-3 bg-[#334155] rounded w-20" />
+                <div className="h-3 bg-[#334155] rounded w-24" />
+                <div className="h-3 bg-[#334155] rounded w-16" />
+              </div>
+
+              {/* Main Content */}
+              <div className="flex-1 p-4 space-y-4">
+                {/* Top Bar */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-200">내 프로젝트</span>
+                  <div className="w-6 h-6 rounded-full bg-primary-500" />
+                </div>
+
+                {/* Stat Cards */}
+                <div className="flex gap-3">
+                  {[
+                    { num: '12', label: '진행중', color: 'text-white' },
+                    { num: '5', label: '완료', color: 'text-success' },
+                    { num: '3', label: '대기중', color: 'text-warning' },
+                  ].map((s) => (
+                    <div key={s.label} className="flex-1 bg-[#334155] rounded-xl p-3">
+                      <div className={`text-xl font-bold ${s.color}`}>{s.num}</div>
+                      <div className="text-[10px] text-slate-400">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Chart Area */}
+                <div className="bg-[#334155] rounded-xl p-3">
+                  <div className="text-xs font-semibold text-slate-200 mb-3">주간 활동</div>
+                  <div className="flex items-end gap-2 h-24">
+                    {[60, 90, 45, 110, 75, 130, 55].map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 bg-primary-500 rounded"
+                        style={{ height: `${(h / 130) * 100}%`, opacity: 0.6 + (i % 3) * 0.15 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Task List */}
+                <div className="bg-[#334155] rounded-xl p-3 space-y-2">
+                  <div className="text-xs font-semibold text-slate-200">최근 태스크</div>
+                  {[
+                    { w: 'w-40', color: 'bg-success-dark' },
+                    { w: 'w-48', color: 'bg-primary-700' },
+                  ].map((t, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded ${i === 0 ? 'bg-success' : 'bg-primary-500'}`} />
+                      <div className={`h-2 ${t.w} bg-[#475569] rounded`} />
+                      <div className="ml-auto">
+                        <div className={`h-3.5 w-10 ${t.color} rounded text-[6px] text-white flex items-center justify-center`}>
+                          {i === 0 ? 'Done' : 'In Progress'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </main>
     </div>

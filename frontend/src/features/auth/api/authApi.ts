@@ -23,5 +23,5 @@ export const authApi = {
     }),
 
   logout: () =>
-    apiClient.delete('/api/auth/logout'),
+    apiClient.post('/api/auth/logout'),
 }

@@ -1,7 +1,7 @@
 export interface User {
-  id: string
+  no: number
   email: string
   name: string
-  avatarUrl: string | null
-  statusMessage: string | null
+  picture: string | null
+  provider: string | null
 }

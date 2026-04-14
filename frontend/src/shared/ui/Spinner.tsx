@@ -15,7 +15,7 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
   return (
     <div
       className={twMerge(
-        'border-indigo-500 border-t-transparent rounded-full animate-spin',
+        'border-primary-500 border-t-transparent rounded-full animate-spin',
         sizes[size],
         className,
       )}

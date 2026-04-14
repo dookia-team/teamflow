@@ -4,7 +4,7 @@ export function GoogleLoginButton() {
   return (
     <button
       onClick={redirectToGoogleOAuth}
-      className="flex items-center gap-3 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+      className="flex items-center gap-3 px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-button font-semibold hover:bg-gray-50 transition-colors shadow-sm"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path

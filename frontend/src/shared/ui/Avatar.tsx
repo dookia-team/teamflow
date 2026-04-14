@@ -36,7 +36,7 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   return (
     <div
       className={twMerge(
-        'rounded-full bg-indigo-100 text-indigo-700 font-semibold flex items-center justify-center',
+        'rounded-full bg-primary-100 text-primary-700 font-semibold flex items-center justify-center',
         sizes[size],
         className,
       )}
