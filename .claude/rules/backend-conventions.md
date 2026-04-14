@@ -100,6 +100,25 @@ DELETE /api/{resource}/{id}     삭제
 
 ---
 
+## 코드 포매팅 규칙
+
+- **메서드 시그니처 개행 금지** — 파라미터가 과도하게 긴 경우(라인 120자 초과 등)가 아니면 시그니처를 한 줄로 유지한다.
+파라미터가 2~3개인 평범한 메서드를 굳이 여러 줄로 쪼개지 않는다.
+- 메서드 호출도 동일 — 특별히 길거나 가독성이 떨어지는 경우에만 개행한다.
+
+```java
+// 권장
+public ResponseEntity<ApiResponse<UsageDto.Response>> getHistory(int page, int size) { ... }
+
+// 지양 (불필요한 개행)
+public ResponseEntity<ApiResponse<UsageDto.Response>> getHistory(
+    int page,
+    int size
+) { ... }
+```
+
+---
+
 ## 예외 처리 규칙
 
 - 엔티티마다 별도 예외 클래스 생성 금지. 공통 `EntityNotFoundException` 하나를 두고 엔티티명을 파라미터로 전달.
