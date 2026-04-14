@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuthStore, LogoutButton } from '@/features/auth'
 import { WorkspaceModal } from '@/features/workspace'
@@ -7,14 +7,12 @@ import { Avatar, Button } from '@/shared/ui'
 export function ProjectsPage() {
   const user = useAuthStore((s) => s.user)
   const location = useLocation()
-  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false)
+  const isNewUser = (location.state as { isNewUser?: boolean })?.isNewUser ?? false
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(isNewUser)
 
-  useEffect(() => {
-    if ((location.state as { isNewUser?: boolean })?.isNewUser) {
-      setShowWorkspaceModal(true)
-      window.history.replaceState({}, '')
-    }
-  }, [location.state])
+  if (isNewUser) {
+    window.history.replaceState({}, '')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
