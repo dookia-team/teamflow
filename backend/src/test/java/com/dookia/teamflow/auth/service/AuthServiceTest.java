@@ -7,21 +7,22 @@ import com.dookia.teamflow.auth.exception.AuthException;
 import com.dookia.teamflow.token.entity.RefreshToken;
 import com.dookia.teamflow.token.repository.RefreshTokenRepository;
 import com.dookia.teamflow.user.entity.User;
+import com.dookia.teamflow.user.entity.UserProvider;
 import com.dookia.teamflow.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.time.Duration;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,30 +42,29 @@ class AuthServiceTest {
 
     private JwtProperties jwtProperties;
     private AuthService authService;
+    private final AtomicLong idSeq = new AtomicLong(1);
 
     @BeforeEach
     void setUp() {
         jwtProperties = new JwtProperties(
             "test-secret-key-must-be-at-least-256-bits-long-aaaaaaaaaa",
-            900,     // 15m
-            604800   // 7d
+            900,
+            604800
         );
         authService = new AuthService(
             userRepository, refreshTokenRepository, googleOAuthService, jwtService, jwtProperties
         );
     }
 
-    // ---------- login ----------
-
     @Test
-    @DisplayName("신규 사용자 Google 로그인 → users 저장 + isNewUser=true")
+    @DisplayName("신규 사용자 Google 로그인 → user 저장 + isNewUser=true")
     void login_newUser_createsUserAndReturnsIsNewUserTrue() {
         var googleInfo = new GoogleOAuthService.GoogleUserInfo("g-123", "new@x.com", "신규", "http://pic");
         given(googleOAuthService.exchangeCodeForUser("code", "uri")).willReturn(googleInfo);
-        given(userRepository.findByGoogleId("g-123")).willReturn(Optional.empty());
+        given(userRepository.findByProviderAndProviderId(UserProvider.GOOGLE, "g-123")).willReturn(Optional.empty());
         given(userRepository.save(any(User.class))).willAnswer(inv -> {
             User u = inv.getArgument(0);
-            injectId(u, UUID.randomUUID());
+            injectNo(u, idSeq.getAndIncrement());
             return u;
         });
         given(jwtService.issueAccessToken(any(User.class))).willReturn("access.jwt.token");
@@ -82,13 +82,13 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("기존 사용자 Google 로그인 → last_login_at 갱신 + isNewUser=false")
-    void login_existingUser_updatesLastLogin() {
-        UUID userId = UUID.randomUUID();
-        User existing = userWithId(userId, "g-999", "old@x.com", "기존");
+    @DisplayName("기존 사용자 Google 로그인 → 프로필 갱신 + isNewUser=false")
+    void login_existingUser_updatesProfile() {
+        long userNo = 42L;
+        User existing = userWithNo(userNo, "g-999", "old@x.com", "기존");
         var googleInfo = new GoogleOAuthService.GoogleUserInfo("g-999", "old@x.com", "기존 갱신", "http://pic2");
         given(googleOAuthService.exchangeCodeForUser("code", "uri")).willReturn(googleInfo);
-        given(userRepository.findByGoogleId("g-999")).willReturn(Optional.of(existing));
+        given(userRepository.findByProviderAndProviderId(UserProvider.GOOGLE, "g-999")).willReturn(Optional.of(existing));
         given(jwtService.issueAccessToken(existing)).willReturn("access.jwt.token");
 
         var result = authService.login(
@@ -97,32 +97,31 @@ class AuthServiceTest {
         );
 
         assertThat(result.isNewUser()).isFalse();
-        assertThat(existing.getLastLoginAt()).isNotNull();
         assertThat(existing.getName()).isEqualTo("기존 갱신");
+        assertThat(existing.getPicture()).isEqualTo("http://pic2");
         verify(userRepository, never()).save(any(User.class));
     }
-
-    // ---------- refresh ----------
 
     @Test
     @DisplayName("유효한 refresh token → Rotation 수행, 기존 토큰 used=true, 새 토큰 저장")
     void refresh_validToken_rotates() {
-        UUID userId = UUID.randomUUID();
-        UUID familyId = UUID.randomUUID();
-        User user = userWithId(userId, "g-1", "a@b.com", "A");
+        long userNo = 10L;
+        String familyId = UUID.randomUUID().toString();
+        User user = userWithNo(userNo, "g-1", "a@b.com", "A");
 
         String plain = "plain-refresh-token-xyz";
         String hash = sha256Hex(plain);
         RefreshToken stored = RefreshToken.builder()
-            .userId(userId)
+            .userNo(userNo)
             .tokenHash(hash)
             .familyId(familyId)
             .used(false)
-            .expiresAt(OffsetDateTime.now().plus(Duration.ofDays(3)))
+            .userAgent("UA")
+            .expireDate(LocalDateTime.now().plus(Duration.ofDays(3)))
             .build();
 
         given(refreshTokenRepository.findByTokenHash(hash)).willReturn(Optional.of(stored));
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userRepository.findById(userNo)).willReturn(Optional.of(user));
         given(jwtService.issueAccessToken(user)).willReturn("new.access.token");
 
         var result = authService.refresh(plain, "UA", "1.2.3.4");
@@ -133,23 +132,23 @@ class AuthServiceTest {
 
         ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
         verify(refreshTokenRepository).save(captor.capture());
-        assertThat(captor.getValue().getFamilyId()).isEqualTo(familyId); // 같은 family 유지
+        assertThat(captor.getValue().getFamilyId()).isEqualTo(familyId);
         assertThat(captor.getValue().isUsed()).isFalse();
     }
 
     @Test
     @DisplayName("이미 used=true 인 refresh token → Replay 감지 + family 전체 삭제 + AUTH_TOKEN_REUSED")
     void refresh_reusedToken_triggersReplayDetection() {
-        UUID userId = UUID.randomUUID();
-        UUID familyId = UUID.randomUUID();
+        String familyId = UUID.randomUUID().toString();
         String plain = "plain-refresh-token";
         String hash = sha256Hex(plain);
         RefreshToken stored = RefreshToken.builder()
-            .userId(userId)
+            .userNo(7L)
             .tokenHash(hash)
             .familyId(familyId)
-            .used(true)                                         // 이미 사용됨
-            .expiresAt(OffsetDateTime.now().plus(Duration.ofDays(1)))
+            .used(true)
+            .userAgent("UA")
+            .expireDate(LocalDateTime.now().plus(Duration.ofDays(1)))
             .build();
 
         given(refreshTokenRepository.findByTokenHash(hash)).willReturn(Optional.of(stored));
@@ -168,11 +167,12 @@ class AuthServiceTest {
         String plain = "plain-refresh-token";
         String hash = sha256Hex(plain);
         RefreshToken stored = RefreshToken.builder()
-            .userId(UUID.randomUUID())
+            .userNo(5L)
             .tokenHash(hash)
-            .familyId(UUID.randomUUID())
+            .familyId(UUID.randomUUID().toString())
             .used(false)
-            .expiresAt(OffsetDateTime.now().minus(Duration.ofDays(1))) // 만료
+            .userAgent("UA")
+            .expireDate(LocalDateTime.now().minus(Duration.ofDays(1)))
             .build();
 
         given(refreshTokenRepository.findByTokenHash(hash)).willReturn(Optional.of(stored));
@@ -203,19 +203,18 @@ class AuthServiceTest {
             .isEqualTo(AuthErrorCode.AUTH_TOKEN_INVALID);
     }
 
-    // ---------- logout ----------
-
     @Test
     @DisplayName("유효한 refresh token 로그아웃 → DB에서 해당 토큰 삭제")
     void logout_existingToken_deletes() {
         String plain = "plain-refresh-token";
         String hash = sha256Hex(plain);
         RefreshToken stored = RefreshToken.builder()
-            .userId(UUID.randomUUID())
+            .userNo(9L)
             .tokenHash(hash)
-            .familyId(UUID.randomUUID())
+            .familyId(UUID.randomUUID().toString())
             .used(false)
-            .expiresAt(OffsetDateTime.now().plus(Duration.ofDays(1)))
+            .userAgent("UA")
+            .expireDate(LocalDateTime.now().plus(Duration.ofDays(1)))
             .build();
         given(refreshTokenRepository.findByTokenHash(hash)).willReturn(Optional.of(stored));
 
@@ -231,8 +230,6 @@ class AuthServiceTest {
         verify(refreshTokenRepository, never()).delete(any());
     }
 
-    // ---------- helpers ----------
-
     private static String sha256Hex(String input) {
         try {
             var md = java.security.MessageDigest.getInstance("SHA-256");
@@ -243,17 +240,17 @@ class AuthServiceTest {
         }
     }
 
-    private static User userWithId(UUID id, String googleId, String email, String name) {
-        User user = User.createFromGoogle(googleId, email, name, null);
-        injectId(user, id);
+    private static User userWithNo(long no, String googleSub, String email, String name) {
+        User user = User.createFromGoogle(googleSub, email, name, null);
+        injectNo(user, no);
         return user;
     }
 
-    private static void injectId(User user, UUID id) {
+    private static void injectNo(User user, long no) {
         try {
-            Field idField = User.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(user, id);
+            Field noField = User.class.getDeclaredField("no");
+            noField.setAccessible(true);
+            noField.set(user, no);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }

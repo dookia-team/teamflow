@@ -17,12 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.UUID;
 
 /**
- * JWT Access Token 발급/검증 서비스. auth-design.md §2.1 과 §5.2 를 따른다.
+ * JWT Access Token 발급/검증 서비스. auth-design.md §2.1 을 따른다.
  *  - 알고리즘: HS256
- *  - payload: sub=user.id, email, name, iat, exp
+ *  - payload: sub=user.no, email, name, iat, exp
  */
 @Service
 @RequiredArgsConstructor
@@ -39,7 +38,7 @@ public class JwtService {
         Instant expiresAt = now.plus(Duration.ofSeconds(properties.accessTokenTtlSeconds()));
 
         return Jwts.builder()
-            .subject(user.getId().toString())
+            .subject(user.getNo().toString())
             .claim("email", user.getEmail())
             .claim("name", user.getName())
             .issuedAt(Date.from(now))
@@ -49,18 +48,18 @@ public class JwtService {
     }
 
     /**
-     * 토큰 검증 후 subject(user id)를 반환한다.
+     * 토큰 검증 후 subject(user.no)를 반환한다.
      *
      * @throws AuthException AUTH_TOKEN_EXPIRED / AUTH_TOKEN_INVALID
      */
-    public UUID parseUserId(String token) {
+    public Long parseUserNo(String token) {
         try {
             Claims claims = Jwts.parser()
                 .verifyWith(key())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-            return UUID.fromString(claims.getSubject());
+            return Long.parseLong(claims.getSubject());
         } catch (ExpiredJwtException e) {
             throw new AuthException(AuthErrorCode.AUTH_TOKEN_EXPIRED, e);
         } catch (JwtException | IllegalArgumentException e) {
