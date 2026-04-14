@@ -2,8 +2,10 @@ package com.dookia.teamflow.exception;
 
 import com.dookia.teamflow.auth.exception.AuthErrorCode;
 import com.dookia.teamflow.auth.exception.AuthException;
+import com.dookia.teamflow.common.exception.EntityNotFoundException;
 import com.dookia.teamflow.dto.ApiResponse;
 import com.dookia.teamflow.dto.ErrorResponse;
+import com.dookia.teamflow.workspace.exception.WorkspaceAccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,6 +23,26 @@ public class GlobalExceptionHandler {
         AuthErrorCode code = e.getErrorCode();
         return ResponseEntity.status(code.getStatus())
             .body(ErrorResponse.of(code.code(), code.getMessage()));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(EntityNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
+    }
+
+    @ExceptionHandler(WorkspaceAccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleWorkspaceAccessDenied(WorkspaceAccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalState(IllegalStateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(e.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
