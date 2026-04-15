@@ -43,6 +43,9 @@ dependencies {
     // Monitoring
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
+    // .env 파일 로딩 — 프로젝트 루트(backend/)의 .env 를 application.yml 의 ${VAR} placeholder 로 자동 주입
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
     // DB
     runtimeOnly 'org.postgresql:postgresql'
 
