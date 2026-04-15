@@ -129,7 +129,10 @@ public ResponseEntity<ApiResponse<WorkspaceDto.Response>> create(...) {
 ## Spring 컨벤션
 
 - `@Transactional` — 쓰기 메서드에 적용. 클래스 레벨 `@Transactional` + 읽기 메서드에 `@Transactional(readOnly = true)`.
-- 생성자 주입 — `@RequiredArgsConstructor` 사용. `@Autowired` 필드 주입 금지.
+- 생성자 주입 — **`@RequiredArgsConstructor` 사용을 기본**으로 한다. 모든 필드는 `private final` 로 선언하고, 명시적 생성자는 작성하지 않는다. **production 코드(`src/main`) 에서는 `@Autowired` 필드 주입 금지.**
+  - 예외: 생성자 본문에 **변환 로직** (예: `List → Map` 정규화) 이 필요한 경우에만 명시적 생성자 작성 허용.
+  - 예외: 부모 클래스 생성자 호출 (`super(...)`) 만 필요한 사용자 정의 예외 클래스.
+  - **테스트 코드 예외**: `@WebMvcTest`, `@DataJpaTest`, `@SpringBootTest` 등 Spring 슬라이스/통합 테스트 클래스는 JUnit 이 인스턴스를 생성하므로 `@Autowired` 필드 주입을 허용한다 (관용적 패턴). 단위 테스트(`@ExtendWith(MockitoExtension.class)`) 에서는 `@InjectMocks` 사용.
 - `Optional` — 반환 타입에만 사용. 필드, 파라미터에 사용 금지.
 - `var` 사용 금지 — 지역변수 타입은 항상 명시적으로 선언한다. 코드 리뷰·diff·GitHub UI·콘솔 로그 등 IDE 외 환경에서도 타입을 즉시 파악할 수 있어야 한다.
 
@@ -142,6 +145,23 @@ List<ProjectDto.SummaryResponse> list = projectService.listInWorkspace(1L, 2L);
 var result = authService.login(request, userAgent, ipAddress);
 var list = projectService.listInWorkspace(1L, 2L);
 ```
+
+---
+
+## 공유 인스턴스 (Spring Bean 싱글톤) 규칙
+
+> 상세 예시·판단 흐름·금지/권장 패턴은 **`backend-bean-reuse.md`** 참조.
+
+**Thread-safe 하게 재사용 가능한 컴포넌트는 절대 서비스 내부에서 직접 생성하지 않는다. 반드시 빈으로 등록하고 생성자 주입으로 받아 사용한다.**
+
+| 컴포넌트 | 처리 방식 | 위치 |
+|----------|----------|------|
+| `ObjectMapper` | Spring Boot 자동 설정 빈 주입 | (별도 정의 불필요) |
+| `RestClient` / `RestTemplate` / `WebClient` | Builder 로 빌드한 단일 빈 주입 | `config/HttpClientConfig` |
+| `CorsConfigurationSource` | `CorsProperties` 와 함께 빈 등록 | `config/CorsConfig` |
+| `PasswordEncoder`, `Clock`, `JwtParser` 등 | 단일 빈으로 정의 후 주입 | `config/` 또는 도메인 `Config` |
+
+환경별로 달라지는 값은 `@ConfigurationProperties` record + `@EnableConfigurationProperties` 로 묶어 빈 생성 시점에 주입한다.
 
 ---
 
@@ -166,93 +186,28 @@ public ResponseEntity<ApiResponse<UsageDto.Response>> getHistory(
 
 ## 객체 변환 규칙 (MapStruct vs 수동 매핑)
 
-객체 ↔ 객체 변환은 **세 가지 경로** 중 하나로 처리한다. 우선순위 순서:
+> 상세 절차·예시·Gradle 설정은 **`backend-mapping.md`** 참조.
 
-### 1) 도메인 팩토리 — `Entity.createFromXxx(...)` (최우선)
+객체 ↔ 객체 변환은 우선순위 순서로 다음 **세 가지 경로** 중 하나로 처리한다:
 
-**항상 도메인 엔티티 안에 둔다. MapStruct로 옮기지 않는다.**
-
-```
-조건:
-- 비즈니스 의미가 담긴 생성 (기본 상태 부여, 식별자 변환 등)
-- 외부 식별자(OAuth sub, 외부 시스템 ID)로부터 도메인 객체를 만들 때
-
-예시: User.createFromOAuth(provider, providerId, email, name, picture)
-```
-
-**팩토리 메서드 일반화 원칙** — 같은 종류의 생성이 여러 분기로 나뉘면 메서드를 분리하지 말고
-enum 파라미터로 일반화한다. (`createFromGoogle` + `createFromKakao` ❌ → `createFromOAuth(provider, ...)` ⭕)
-
-### 2) 명시적 팩토리 — record 내부 `of(entity, ...추가데이터)` (현 컨벤션 유지)
-
-**Entity + 외부 파라미터(count, list, role 등)를 결합해 만드는 응답 DTO. MapStruct 부적합.**
-
-```
-조건:
-- Repository 집계 결과(memberCount 등)를 함께 담는 SummaryResponse
-- 사전 변환된 컬렉션을 주입받는 DetailResponse
-- 권한 컨텍스트(role) 같은 호출자 정보를 결합
-
-예시: WorkspaceDto.SummaryResponse.of(ws, memberCount)
-      ProjectDto.SummaryResponse.of(p, memberCount)
-```
-
-### 3) MapStruct — `{domain}/mapper/{Domain}Mapper` (조건부 사용)
-
-**모든 조건을 만족할 때만 사용한다. 하나라도 어긋나면 record 내부 `from()` 으로 처리.**
-
-```
-조건 (모두 충족):
-- Entity → DTO 또는 외부 응답 DTO → 내부 DTO 의 순수 1:1 매핑
-- 변환 로직에 비즈니스 분기·계산·조건이 전혀 없음
-- 외부 파라미터 결합이 없음 (오직 source 객체 하나만 입력)
+| # | 경로 | 적용 조건 |
+|---|------|-----------|
+| 1 | **도메인 팩토리** — `Entity.createFromXxx(...)` | 비즈니스 의미가 담긴 생성 (기본 상태 부여, 외부 식별자 변환 등) |
+| 2 | **record 내부 정적 팩토리** — `Response.of(entity, ...)` | Entity + 외부 파라미터(count, list, role 등) 결합 |
+| 3 | **MapStruct** — `{domain}/mapper/{Domain}Mapper` | 비즈니스 로직 0 + 외부 파라미터 0 + 순수 1:1 매핑일 때만 |
 
 판단 흐름:
-  1) 비즈니스 로직 있나? → YES → 도메인 팩토리 (1번)
-  2) 외부 파라미터 결합? → YES → record `of()` (2번)
-  3) 순수 1:1 매핑? → YES → MapStruct (3번)
-```
-
-#### MapStruct 사용 시 구조
 
 ```
-{domain}/mapper/{Domain}Mapper.java
+1) 비즈니스 로직 있나? → YES → 도메인 팩토리 (1번)
+2) 외부 파라미터 결합? → YES → record `of()` (2번)
+3) 순수 1:1 매핑?     → YES → MapStruct (3번)
 ```
 
-```java
-package com.{company}.{app}.user.mapper;
-
-import com.{company}.{app}.user.entity.User;
-import com.{company}.{app}.auth.dto.AuthDto;
-import org.mapstruct.Mapper;
-
-@Mapper(componentModel = "spring")
-public interface UserMapper {
-    AuthDto.UserInfo toUserInfo(User user);
-}
-```
-
-```java
-// Service 에서 주입받아 호출
-private final UserMapper userMapper;
-...
-return userMapper.toUserInfo(user);
-```
-
-- `componentModel = "spring"` 필수 — Spring Bean 으로 등록되어야 주입 가능.
-- record 안에 있던 `from()` 정적 팩토리는 **삭제**한다 (변환 진입점이 두 곳이 되면 일관성 깨짐).
-- 매퍼는 변환 책임만 진다. 비즈니스 로직(검증, 계산, 분기)은 매퍼에 절대 두지 않는다.
-
-#### Gradle 설정 (도입 시 한 번)
-
-```groovy
-dependencies {
-    implementation 'org.mapstruct:mapstruct:1.5.+'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.+'
-    // Lombok 와 함께 쓸 경우 lombok-mapstruct-binding 추가
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.+'
-}
-```
+핵심 금기 (어기면 리뷰 반려):
+- 도메인 팩토리를 분기별로 분리 (`createFromGoogle` + `createFromKakao`) — enum 파라미터로 일반화한다.
+- MapStruct 매퍼에 분기·계산·검증 로직 넣기 — 변환 책임만 진다.
+- 동일 변환을 record `from()` 과 MapStruct 양쪽에 두기 — 진입점 단일화.
 
 ---
 
