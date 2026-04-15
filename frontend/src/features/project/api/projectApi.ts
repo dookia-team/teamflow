@@ -3,9 +3,6 @@ import type { Project, ProjectSummary } from '@/entities/project'
 
 interface CreateProjectRequest {
   name: string
-  key: string
-  description?: string
-  visibility: 'PUBLIC' | 'PRIVATE'
 }
 
 export const projectApi = {
