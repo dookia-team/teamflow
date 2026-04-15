@@ -1,0 +1,6 @@
+# 개발(Develop) 환경 프로파일
+# 활성화: SPRING_PROFILES_ACTIVE=develop
+app:
+  google-oauth:
+    client-id: ${GOOGLE_CLIENT_ID_DEV:}
+    client-secret: ${GOOGLE_CLIENT_SECRET_DEV:}

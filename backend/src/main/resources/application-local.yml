@@ -1,0 +1,10 @@
+# 로컬 개발 프로파일
+# 활성화: SPRING_PROFILES_ACTIVE=local (application.yml 의 기본값)
+spring:
+  jpa:
+    show-sql: true
+
+app:
+  google-oauth:
+    client-id: ${GOOGLE_CLIENT_ID_LOCAL:}
+    client-secret: ${GOOGLE_CLIENT_SECRET_LOCAL:}
