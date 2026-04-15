@@ -1,6 +1,7 @@
 package com.dookia.teamflow.workspace.repository;
 
 import com.dookia.teamflow.user.entity.User;
+import com.dookia.teamflow.user.entity.UserProvider;
 import com.dookia.teamflow.user.repository.UserRepository;
 import com.dookia.teamflow.workspace.entity.Workspace;
 import com.dookia.teamflow.workspace.entity.WorkspaceInvitation;
@@ -42,7 +43,7 @@ class WorkspaceRepositoryTest {
     @Test
     @DisplayName("WorkspaceMember — userNo + workspaceNo 조합 고유 + 역할 enum 저장")
     void workspaceMember_roundTrip() {
-        User u = userRepository.save(User.createFromGoogle("sub-1", "a@b.com", "A", null));
+        User u = userRepository.save(User.createFromOAuth(UserProvider.GOOGLE,"sub-1", "a@b.com", "A", null));
         Workspace ws = workspaceRepository.save(Workspace.create("W"));
 
         WorkspaceMember saved = workspaceMemberRepository.save(
@@ -63,8 +64,8 @@ class WorkspaceRepositoryTest {
     @Test
     @DisplayName("WorkspaceInvitation — 기본 TTL 7일 + PENDING 상태로 발급")
     void invitation_issuedWithPendingStatus() {
-        User inviter = userRepository.save(User.createFromGoogle("s-i", "i@x.com", "I", null));
-        User invitee = userRepository.save(User.createFromGoogle("s-v", "v@x.com", "V", null));
+        User inviter = userRepository.save(User.createFromOAuth(UserProvider.GOOGLE,"s-i", "i@x.com", "I", null));
+        User invitee = userRepository.save(User.createFromOAuth(UserProvider.GOOGLE,"s-v", "v@x.com", "V", null));
         Workspace ws = workspaceRepository.save(Workspace.create("W"));
 
         WorkspaceInvitation inv = workspaceInvitationRepository.save(

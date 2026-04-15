@@ -4,6 +4,7 @@ import com.dookia.teamflow.auth.config.JwtProperties;
 import com.dookia.teamflow.auth.exception.AuthErrorCode;
 import com.dookia.teamflow.auth.exception.AuthException;
 import com.dookia.teamflow.user.entity.User;
+import com.dookia.teamflow.user.entity.UserProvider;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.DisplayName;
@@ -92,7 +93,7 @@ class JwtServiceTest {
     }
 
     private static User userWithNo(long no, String email, String name) {
-        User user = User.createFromGoogle("google-sub-" + no, email, name, null);
+        User user = User.createFromOAuth(UserProvider.GOOGLE, "google-sub-" + no, email, name, null);
         try {
             Field noField = User.class.getDeclaredField("no");
             noField.setAccessible(true);

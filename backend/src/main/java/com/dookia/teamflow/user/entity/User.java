@@ -102,13 +102,13 @@ public class User {
         return deleteDate != null;
     }
 
-    public static User createFromGoogle(String googleSub, String email, String name, String picture) {
+    public static User createFromOAuth(UserProvider provider, String providerId, String email, String name, String picture) {
         return User.builder()
             .email(email)
             .name(name)
             .picture(picture)
-            .provider(UserProvider.GOOGLE)
-            .providerId(googleSub)
+            .provider(provider)
+            .providerId(providerId)
             .build();
     }
 }
