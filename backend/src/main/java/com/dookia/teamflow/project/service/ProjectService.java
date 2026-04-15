@@ -1,6 +1,6 @@
 package com.dookia.teamflow.project.service;
 
-import com.dookia.teamflow.common.exception.EntityNotFoundException;
+import com.dookia.teamflow.exception.EntityNotFoundException;
 import com.dookia.teamflow.project.dto.ProjectDto;
 import com.dookia.teamflow.project.entity.Project;
 import com.dookia.teamflow.project.entity.ProjectMember;

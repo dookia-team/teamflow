@@ -1,6 +1,6 @@
 package com.dookia.teamflow.workspace.service;
 
-import com.dookia.teamflow.common.exception.EntityNotFoundException;
+import com.dookia.teamflow.exception.EntityNotFoundException;
 import com.dookia.teamflow.user.repository.UserRepository;
 import com.dookia.teamflow.workspace.dto.WorkspaceDto;
 import com.dookia.teamflow.workspace.entity.Workspace;

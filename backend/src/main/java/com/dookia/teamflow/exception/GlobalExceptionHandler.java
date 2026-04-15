@@ -2,7 +2,6 @@ package com.dookia.teamflow.exception;
 
 import com.dookia.teamflow.auth.exception.AuthErrorCode;
 import com.dookia.teamflow.auth.exception.AuthException;
-import com.dookia.teamflow.common.exception.EntityNotFoundException;
 import com.dookia.teamflow.dto.ApiResponse;
 import com.dookia.teamflow.dto.ErrorResponse;
 import com.dookia.teamflow.workspace.exception.WorkspaceAccessDeniedException;
