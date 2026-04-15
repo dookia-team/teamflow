@@ -1,4 +1,4 @@
-package com.dookia.teamflow.common.exception;
+package com.dookia.teamflow.exception;
 
 /**
  * 공통 엔티티 미존재 예외. backend-conventions.md 규칙에 따라 엔티티별 예외 클래스를 따로 두지 않고
