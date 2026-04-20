@@ -4,3 +4,8 @@ app:
   google-oauth:
     client-id: ${GOOGLE_CLIENT_ID:}
     client-secret: ${GOOGLE_CLIENT_SECRET:}
+  jwt:
+    # 프론트(Vercel) ↔ 백엔드(Render) 크로스사이트 → SameSite=None + Secure=true 필수
+    # 같은 도메인으로 통합 후 cookie-same-site 만 Strict 로 변경
+    cookie-same-site: ${JWT_COOKIE_SAME_SITE:None}
+    cookie-secure: ${JWT_COOKIE_SECURE:true}

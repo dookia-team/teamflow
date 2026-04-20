@@ -24,6 +24,8 @@ app:
     secret: test-secret-key-must-be-at-least-256-bits-long-aaaaaaaaaa
     access-token-ttl-seconds: 900
     refresh-token-ttl-seconds: 604800
+    cookie-same-site: Lax
+    cookie-secure: false
   google-oauth:
     client-id: test-client
     client-secret: test-secret

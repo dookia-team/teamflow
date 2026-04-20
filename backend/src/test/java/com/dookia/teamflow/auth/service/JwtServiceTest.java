@@ -27,7 +27,7 @@ class JwtServiceTest {
     private static final long REFRESH_TTL = 604800;
 
     private final JwtService jwtService = new JwtService(
-        new JwtProperties(SECRET, ACCESS_TTL, REFRESH_TTL)
+        new JwtProperties(SECRET, ACCESS_TTL, REFRESH_TTL, "Lax", false)
     );
 
     @Test

@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record JwtProperties(
     String secret,
     long accessTokenTtlSeconds,
-    long refreshTokenTtlSeconds
+    long refreshTokenTtlSeconds,
+    String cookieSameSite,
+    boolean cookieSecure
 ) {
 }

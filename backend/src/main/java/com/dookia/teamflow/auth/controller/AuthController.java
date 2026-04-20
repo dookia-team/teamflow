@@ -69,8 +69,8 @@ public class AuthController implements AuthApi {
 
         ResponseCookie expired = ResponseCookie.from(REFRESH_COOKIE_NAME, "")
             .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
+            .secure(jwtProperties.cookieSecure())
+            .sameSite(jwtProperties.cookieSameSite())
             .path(REFRESH_COOKIE_PATH)
             .maxAge(0)
             .build();
@@ -85,8 +85,8 @@ public class AuthController implements AuthApi {
     private ResponseCookie buildRefreshCookie(String token) {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
             .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
+            .secure(jwtProperties.cookieSecure())
+            .sameSite(jwtProperties.cookieSameSite())
             .path(REFRESH_COOKIE_PATH)
             .maxAge(Duration.ofSeconds(jwtProperties.refreshTokenTtlSeconds()))
             .build();

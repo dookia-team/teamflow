@@ -53,7 +53,9 @@ class AuthControllerTest {
             return new JwtProperties(
                 "test-secret-key-must-be-at-least-256-bits-long-aaaaaaaaaa",
                 900,
-                604800
+                604800,
+                "Lax",
+                false
             );
         }
     }

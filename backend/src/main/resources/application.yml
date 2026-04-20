@@ -58,6 +58,11 @@ app:
     secret: ${JWT_SECRET:change-me-in-production-this-must-be-at-least-256-bits-long-for-hs256}
     access-token-ttl-seconds: 900         # 15분 (auth-design §2.1)
     refresh-token-ttl-seconds: 604800     # 7일  (auth-design §2.2)
+    # Refresh Cookie 정책 — 환경별 override (application-{profile}.yml)
+    # local: Lax + Secure=false (http localhost)
+    # 운영(크로스사이트): None + Secure=true / 도메인 통합 후: Strict + Secure=true
+    cookie-same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+    cookie-secure: ${JWT_COOKIE_SECURE:false}
   google-oauth:
     token-uri: https://oauth2.googleapis.com/token
     # client-id / client-secret 는 application-{profile}.yml 에서 주입
