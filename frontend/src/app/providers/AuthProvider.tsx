@@ -4,9 +4,13 @@ import { useAuthStore, authApi } from '@/features/auth'
 export function AuthProvider({ children }: { children: ReactNode }) {
   const setAuth = useAuthStore((s) => s.setAuth)
   const clearAuth = useAuthStore((s) => s.clearAuth)
-  const setLoading = useAuthStore((s) => s.setLoading)
 
   useEffect(() => {
+    // 이미 인증된 상태면 refresh 불필요
+    if (useAuthStore.getState().isAuthenticated) {
+      return
+    }
+
     const restoreAuth = async () => {
       try {
         const { data } = await authApi.refresh()
@@ -17,13 +21,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           clearAuth()
         }
       } catch {
-        // refresh 실패 = 로그인 안 된 상태 → 바로 로딩 해제
         clearAuth()
       }
     }
 
     restoreAuth()
-  }, [setAuth, setLoading, clearAuth])
+  }, [setAuth, clearAuth])
 
   return <>{children}</>
 }
