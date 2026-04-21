@@ -2,9 +2,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Modal, Button, Input, Select, Textarea, Spinner } from '@/shared/ui'
-import { useCreateIssue } from '../model/useCreateIssue'
+import { useCreateTicket } from '../model/useCreateTicket'
 
-const createIssueSchema = z.object({
+const createTicketSchema = z.object({
   title: z.string().min(2, '제목은 2자 이상이어야 합니다').max(200, '제목은 200자 이하여야 합니다'),
   description: z.string().optional(),
   status: z.string().default('BACKLOG'),
@@ -13,9 +13,9 @@ const createIssueSchema = z.object({
   dueDate: z.string().optional(),
 })
 
-type CreateIssueFormData = z.infer<typeof createIssueSchema>
+type CreateTicketFormData = z.infer<typeof createTicketSchema>
 
-interface CreateIssueModalProps {
+interface CreateTicketModalProps {
   isOpen: boolean
   onClose: () => void
   projectNo: number
@@ -35,16 +35,16 @@ const priorityOptions = [
   { label: 'Critical', value: 'CRITICAL' },
 ]
 
-export function CreateIssueModal({ isOpen, onClose, projectNo }: CreateIssueModalProps) {
-  const createIssue = useCreateIssue()
+export function CreateTicketModal({ isOpen, onClose, projectNo }: CreateTicketModalProps) {
+  const createTicket = useCreateTicket()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CreateIssueFormData>({
-    resolver: zodResolver(createIssueSchema),
+  } = useForm<CreateTicketFormData>({
+    resolver: zodResolver(createTicketSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -53,11 +53,11 @@ export function CreateIssueModal({ isOpen, onClose, projectNo }: CreateIssueModa
     },
   })
 
-  const isLoading = createIssue.isPending
+  const isLoading = createTicket.isPending
 
-  const onSubmit = async (data: CreateIssueFormData) => {
+  const onSubmit = async (data: CreateTicketFormData) => {
     try {
-      await createIssue.mutateAsync({
+      await createTicket.mutateAsync({
         projectNo,
         data: {
           title: data.title,
@@ -76,26 +76,26 @@ export function CreateIssueModal({ isOpen, onClose, projectNo }: CreateIssueModa
 
   const handleClose = () => {
     reset()
-    createIssue.reset()
+    createTicket.reset()
     onClose()
   }
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} className="max-w-[560px] p-8">
-      <h2 className="text-xl font-bold text-grey-900 mb-1">새 이슈 만들기</h2>
-      <p className="text-sm text-grey-500 mb-6">이슈 정보를 입력하세요.</p>
+      <h2 className="text-xl font-bold text-grey-900 mb-1">새 티켓 만들기</h2>
+      <p className="text-sm text-grey-500 mb-6">티켓 정보를 입력하세요.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label="제목"
-          placeholder="이슈 제목을 입력하세요"
+          placeholder="티켓 제목을 입력하세요"
           error={errors.title?.message}
           {...register('title')}
         />
 
         <Textarea
           label="설명 (선택)"
-          placeholder="이슈에 대한 설명을 입력하세요"
+          placeholder="티켓에 대한 설명을 입력하세요"
           {...register('description')}
         />
 
@@ -109,8 +109,8 @@ export function CreateIssueModal({ isOpen, onClose, projectNo }: CreateIssueModa
           <div />
         </div>
 
-        {createIssue.isError && (
-          <p className="text-sm text-error">이슈 생성에 실패했습니다. 다시 시도해주세요.</p>
+        {createTicket.isError && (
+          <p className="text-sm text-error">티켓 생성에 실패했습니다. 다시 시도해주세요.</p>
         )}
 
         <div className="flex gap-3 pt-2">
@@ -121,7 +121,7 @@ export function CreateIssueModal({ isOpen, onClose, projectNo }: CreateIssueModa
             {isLoading ? (
               <Spinner size="sm" className="border-white border-t-transparent" />
             ) : (
-              '이슈 생성'
+              '티켓 생성'
             )}
           </Button>
         </div>

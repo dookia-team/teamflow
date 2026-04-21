@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { issueApi } from '../api/issueApi'
+import { ticketApi } from '../api/ticketApi'
 
-interface CreateIssueParams {
+interface CreateTicketParams {
   projectNo: number
   data: {
     title: string
@@ -13,13 +13,13 @@ interface CreateIssueParams {
   }
 }
 
-export function useCreateIssue() {
+export function useCreateTicket() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ projectNo, data }: CreateIssueParams) => issueApi.create(projectNo, data),
+    mutationFn: ({ projectNo, data }: CreateTicketParams) => ticketApi.create(projectNo, data),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['issues', variables.projectNo] })
+      queryClient.invalidateQueries({ queryKey: ['tickets', variables.projectNo] })
     },
   })
 }
