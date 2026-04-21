@@ -4,6 +4,8 @@ import com.dookia.teamflow.issue.entity.Issue;
 import com.dookia.teamflow.issue.entity.IssuePriority;
 import com.dookia.teamflow.issue.entity.IssueStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -64,6 +66,28 @@ public class IssueDto {
                 issue.getPosition(),
                 issue.getDueDate()
             );
+        }
+    }
+
+    public record StatusChangeRequest(
+        @NotNull(message = "status 는 필수입니다.") IssueStatus status
+    ) {}
+
+    public record PositionChangeRequest(
+        @NotNull(message = "position 은 필수입니다.")
+        @PositiveOrZero(message = "position 은 0 이상이어야 합니다.")
+        Integer position
+    ) {}
+
+    public record StatusResponse(Long no, IssueStatus status) {
+        public static StatusResponse from(Issue issue) {
+            return new StatusResponse(issue.getNo(), issue.getStatus());
+        }
+    }
+
+    public record PositionResponse(Long no, int position) {
+        public static PositionResponse from(Issue issue) {
+            return new PositionResponse(issue.getNo(), issue.getPosition());
         }
     }
 }

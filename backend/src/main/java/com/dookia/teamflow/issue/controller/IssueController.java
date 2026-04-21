@@ -66,4 +66,16 @@ public class IssueController {
     public void delete(@AuthenticationPrincipal Long userNo, @PathVariable Long issueNo) {
         issueService.delete(issueNo, userNo);
     }
+
+    @Operation(summary = "이슈 상태 변경 (드래그 앤 드롭: 컬럼 간 이동)")
+    @PatchMapping("/api/issues/{issueNo}/status")
+    public ApiResponse<IssueDto.StatusResponse> changeStatus(@AuthenticationPrincipal Long userNo, @PathVariable Long issueNo, @Valid @RequestBody IssueDto.StatusChangeRequest request) {
+        return ApiResponse.success(issueService.changeStatus(issueNo, userNo, request.status()));
+    }
+
+    @Operation(summary = "이슈 순서 변경 (같은 컬럼 내)")
+    @PatchMapping("/api/issues/{issueNo}/position")
+    public ApiResponse<IssueDto.PositionResponse> changePosition(@AuthenticationPrincipal Long userNo, @PathVariable Long issueNo, @Valid @RequestBody IssueDto.PositionChangeRequest request) {
+        return ApiResponse.success(issueService.changePosition(issueNo, userNo, request.position()));
+    }
 }

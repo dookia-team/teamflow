@@ -199,4 +199,87 @@ class IssueControllerTest {
         mockMvc.perform(delete("/api/issues/99"))
             .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("PATCH /api/issues/{issueNo}/status → 200 + StatusResponse")
+    void changeStatus_returns200() throws Exception {
+        authenticatedAs(2L);
+        given(issueService.changeStatus(101L, 2L, IssueStatus.IN_PROGRESS))
+            .willReturn(new IssueDto.StatusResponse(101L, IssueStatus.IN_PROGRESS));
+
+        mockMvc.perform(patch("/api/issues/101/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"IN_PROGRESS\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.no", equalTo(101)))
+            .andExpect(jsonPath("$.data.status", equalTo("IN_PROGRESS")));
+    }
+
+    @Test
+    @DisplayName("PATCH /status → status 누락 400")
+    void changeStatus_missingStatus_returns400() throws Exception {
+        authenticatedAs(2L);
+        mockMvc.perform(patch("/api/issues/101/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PATCH /status → 잘못된 enum 400")
+    void changeStatus_invalidEnum_returns400() throws Exception {
+        authenticatedAs(2L);
+        mockMvc.perform(patch("/api/issues/101/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"NOT_A_STATUS\"}"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PATCH /status → 없는 이슈 404")
+    void changeStatus_notFound_returns404() throws Exception {
+        authenticatedAs(2L);
+        given(issueService.changeStatus(99L, 2L, IssueStatus.DONE))
+            .willThrow(new EntityNotFoundException("Issue", 99L));
+
+        mockMvc.perform(patch("/api/issues/99/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"DONE\"}"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("PATCH /api/issues/{issueNo}/position → 200 + PositionResponse")
+    void changePosition_returns200() throws Exception {
+        authenticatedAs(2L);
+        given(issueService.changePosition(101L, 2L, 5))
+            .willReturn(new IssueDto.PositionResponse(101L, 5));
+
+        mockMvc.perform(patch("/api/issues/101/position")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"position\":5}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.no", equalTo(101)))
+            .andExpect(jsonPath("$.data.position", equalTo(5)));
+    }
+
+    @Test
+    @DisplayName("PATCH /position → 음수 400")
+    void changePosition_negative_returns400() throws Exception {
+        authenticatedAs(2L);
+        mockMvc.perform(patch("/api/issues/101/position")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"position\":-1}"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PATCH /position → 누락 400")
+    void changePosition_missing_returns400() throws Exception {
+        authenticatedAs(2L);
+        mockMvc.perform(patch("/api/issues/101/position")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isBadRequest());
+    }
 }

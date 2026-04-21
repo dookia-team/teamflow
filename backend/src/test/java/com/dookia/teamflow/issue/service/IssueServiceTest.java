@@ -179,6 +179,72 @@ class IssueServiceTest {
             .isInstanceOf(EntityNotFoundException.class);
     }
 
+    @Test
+    @DisplayName("changeStatus → BACKLOG → IN_PROGRESS 로 변경되고 StatusResponse 반환")
+    void changeStatus_success() {
+        Project project = injectProjectNo(Project.create(10L, "P", "TF", null, null), 50L);
+        Issue issue = injectIssueNo(Issue.create(
+            50L, "TF-1", "A", null, IssueStatus.BACKLOG, null, null, null, 0), 101L);
+        given(issueRepository.findByNoAndDeleteDateIsNull(101L)).willReturn(Optional.of(issue));
+        given(projectRepository.findById(50L)).willReturn(Optional.of(project));
+        given(workspaceMemberRepository.existsByWorkspaceNoAndUserNo(10L, 2L)).willReturn(true);
+
+        IssueDto.StatusResponse res = issueService.changeStatus(101L, 2L, IssueStatus.IN_PROGRESS);
+
+        assertThat(res.no()).isEqualTo(101L);
+        assertThat(res.status()).isEqualTo(IssueStatus.IN_PROGRESS);
+        assertThat(issue.getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
+    }
+
+    @Test
+    @DisplayName("changeStatus → 없는 이슈 404")
+    void changeStatus_missing_throws() {
+        given(issueRepository.findByNoAndDeleteDateIsNull(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> issueService.changeStatus(99L, 2L, IssueStatus.DONE))
+            .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("changeStatus → 비멤버 403")
+    void changeStatus_nonMember_denied() {
+        Project project = injectProjectNo(Project.create(10L, "P", "TF", null, null), 50L);
+        Issue issue = injectIssueNo(Issue.create(
+            50L, "TF-1", "A", null, null, null, null, null, 0), 101L);
+        given(issueRepository.findByNoAndDeleteDateIsNull(101L)).willReturn(Optional.of(issue));
+        given(projectRepository.findById(50L)).willReturn(Optional.of(project));
+        given(workspaceMemberRepository.existsByWorkspaceNoAndUserNo(10L, 99L)).willReturn(false);
+
+        assertThatThrownBy(() -> issueService.changeStatus(101L, 99L, IssueStatus.DONE))
+            .isInstanceOf(WorkspaceAccessDeniedException.class);
+    }
+
+    @Test
+    @DisplayName("changePosition → 0 → 5 로 이동되고 PositionResponse 반환")
+    void changePosition_success() {
+        Project project = injectProjectNo(Project.create(10L, "P", "TF", null, null), 50L);
+        Issue issue = injectIssueNo(Issue.create(
+            50L, "TF-1", "A", null, null, null, null, null, 0), 101L);
+        given(issueRepository.findByNoAndDeleteDateIsNull(101L)).willReturn(Optional.of(issue));
+        given(projectRepository.findById(50L)).willReturn(Optional.of(project));
+        given(workspaceMemberRepository.existsByWorkspaceNoAndUserNo(10L, 2L)).willReturn(true);
+
+        IssueDto.PositionResponse res = issueService.changePosition(101L, 2L, 5);
+
+        assertThat(res.no()).isEqualTo(101L);
+        assertThat(res.position()).isEqualTo(5);
+        assertThat(issue.getPosition()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("changePosition → soft delete 된 이슈는 조회되지 않아 404")
+    void changePosition_softDeleted_throws() {
+        given(issueRepository.findByNoAndDeleteDateIsNull(101L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> issueService.changePosition(101L, 2L, 3))
+            .isInstanceOf(EntityNotFoundException.class);
+    }
+
     // ---------- helpers ----------
 
     private static Project injectProjectNo(Project p, long no) {

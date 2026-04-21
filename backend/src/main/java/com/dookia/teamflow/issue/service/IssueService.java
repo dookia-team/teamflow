@@ -3,6 +3,7 @@ package com.dookia.teamflow.issue.service;
 import com.dookia.teamflow.exception.EntityNotFoundException;
 import com.dookia.teamflow.issue.dto.IssueDto;
 import com.dookia.teamflow.issue.entity.Issue;
+import com.dookia.teamflow.issue.entity.IssueStatus;
 import com.dookia.teamflow.issue.repository.IssueRepository;
 import com.dookia.teamflow.project.entity.Project;
 import com.dookia.teamflow.project.repository.ProjectRepository;
@@ -90,6 +91,27 @@ public class IssueService {
         Issue issue = loadActive(issueNo);
         requireProjectMember(issue.getProjectNo(), userNo);
         issue.softDelete();
+    }
+
+    /**
+     * 칸반 보드 드래그 앤 드롭의 컬럼 간 이동. 상태만 변경하고 최소 응답을 돌려준다.
+     */
+    public IssueDto.StatusResponse changeStatus(Long issueNo, Long userNo, IssueStatus status) {
+        Issue issue = loadActive(issueNo);
+        requireProjectMember(issue.getProjectNo(), userNo);
+        issue.changeStatus(status);
+        return IssueDto.StatusResponse.from(issue);
+    }
+
+    /**
+     * 같은 컬럼 내 순서 변경. position 만 변경하고 최소 응답을 돌려준다.
+     * 다중 이슈 rebalancing 은 본 API 범위 외 — 클라이언트가 드롭 타겟 position 을 계산해 전달한다.
+     */
+    public IssueDto.PositionResponse changePosition(Long issueNo, Long userNo, int position) {
+        Issue issue = loadActive(issueNo);
+        requireProjectMember(issue.getProjectNo(), userNo);
+        issue.moveTo(position);
+        return IssueDto.PositionResponse.from(issue);
     }
 
     // --- helpers ------------------------------------------------------------
