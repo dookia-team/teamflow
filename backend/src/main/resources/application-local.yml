@@ -1,8 +1,28 @@
 # 로컬 개발 프로파일
 # 활성화: SPRING_PROFILES_ACTIVE=local (application.yml 의 기본값)
+#
+# 실행 방식 ① — 전체 스택을 docker compose 로 (백엔드도 컨테이너):
+#   docker compose up -d --build
+#
+# 실행 방식 ② — DB/Redis 만 컨테이너, 백엔드는 호스트 JVM:
+#   docker compose up -d postgres redis
+#   ./gradlew bootRun
+#
+# ※ docker compose 는 DATASOURCE_URL / REDIS_HOST 등 env 를 주입한다.
+#   이 프로파일의 값을 literal 로 고정하지 말고 ${...:default} 형태를 유지할 것 —
+#   그래야 ①(컨테이너 내부 host=postgres) 과 ②(host=localhost) 모두에서 동작한다.
 spring:
   jpa:
     show-sql: true
+  data:
+    redis:
+      # 로컬 Redis 는 SSL 미사용 — base default(true) 를 로컬에서만 override
+      ssl:
+        enabled: ${REDIS_SSL:false}
+  flyway:
+    # 로컬 한정: Sprint 개발 중 마이그레이션 파일 재편집으로 checksum 이 깨져도
+    # 앱 기동을 막지 않음. develop/prod 에서는 절대 false 로 두지 않는다.
+    validate-on-migrate: false
 
 app:
   google-oauth:
