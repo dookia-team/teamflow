@@ -1,9 +1,14 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { workspaceApi } from '../api/workspaceApi'
 
 export function useCreateWorkspace() {
+  const queryClient = useQueryClient()
+
   const createMutation = useMutation({
     mutationFn: (data: { name: string }) => workspaceApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+    },
   })
 
   const inviteMutation = useMutation({

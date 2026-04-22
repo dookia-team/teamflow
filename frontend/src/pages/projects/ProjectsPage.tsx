@@ -16,6 +16,10 @@ export function ProjectsPage() {
     window.history.replaceState({}, '')
   }
 
+  const handleWorkspaceCreated = () => {
+    setShowWorkspaceModal(false)
+  }
+
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useWorkspaces()
   const currentWorkspace = workspaces?.[0]
   const workspaceNo = currentWorkspace?.no
@@ -40,7 +44,11 @@ export function ProjectsPage() {
             워크스페이스 만들기
           </Button>
         </div>
-        <WorkspaceModal isOpen={showWorkspaceModal} onClose={() => setShowWorkspaceModal(false)} />
+        <WorkspaceModal
+          isOpen={showWorkspaceModal}
+          onClose={() => setShowWorkspaceModal(false)}
+          onSuccess={handleWorkspaceCreated}
+        />
       </div>
     )
   }
@@ -102,7 +110,11 @@ export function ProjectsPage() {
         )}
       </div>
 
-      <WorkspaceModal isOpen={showWorkspaceModal} onClose={() => setShowWorkspaceModal(false)} />
+      <WorkspaceModal
+        isOpen={showWorkspaceModal}
+        onClose={() => setShowWorkspaceModal(false)}
+        onSuccess={handleWorkspaceCreated}
+      />
 
       {workspaceNo && (
         <CreateProjectModal
