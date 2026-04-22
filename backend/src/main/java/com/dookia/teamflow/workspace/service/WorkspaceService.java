@@ -7,7 +7,7 @@ import com.dookia.teamflow.workspace.entity.Workspace;
 import com.dookia.teamflow.workspace.entity.WorkspaceInvitation;
 import com.dookia.teamflow.workspace.entity.WorkspaceMember;
 import com.dookia.teamflow.workspace.entity.WorkspaceMemberRole;
-import com.dookia.teamflow.workspace.exception.WorkspaceAccessDeniedException;
+import com.dookia.teamflow.exception.WorkspaceAccessDeniedException;
 import com.dookia.teamflow.workspace.repository.WorkspaceInvitationRepository;
 import com.dookia.teamflow.workspace.repository.WorkspaceMemberRepository;
 import com.dookia.teamflow.workspace.repository.WorkspaceRepository;

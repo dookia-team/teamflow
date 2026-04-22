@@ -1,13 +1,14 @@
-package com.dookia.teamflow.auth.exception;
+package com.dookia.teamflow.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
  * auth-design.md §4에 정의된 인증 에러 코드 목록.
+ * {@link ErrorCode} 공통 인터페이스를 구현해 핸들러/필터/ApiResponse 가 CommonErrorCode 와 동일하게 처리 가능.
  */
 @Getter
-public enum AuthErrorCode {
+public enum AuthErrorCode implements ErrorCode {
 
     AUTH_MISSING_CODE(HttpStatus.BAD_REQUEST, "code 파라미터가 필요합니다."),
     AUTH_INVALID_CODE(HttpStatus.BAD_REQUEST, "Authorization code가 유효하지 않습니다."),
@@ -27,6 +28,7 @@ public enum AuthErrorCode {
         this.message = message;
     }
 
+    @Override
     public String code() {
         return this.name();
     }

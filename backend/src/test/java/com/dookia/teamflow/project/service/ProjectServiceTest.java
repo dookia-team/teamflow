@@ -9,7 +9,7 @@ import com.dookia.teamflow.project.entity.ProjectStatus;
 import com.dookia.teamflow.project.entity.ProjectVisibility;
 import com.dookia.teamflow.project.repository.ProjectMemberRepository;
 import com.dookia.teamflow.project.repository.ProjectRepository;
-import com.dookia.teamflow.workspace.exception.WorkspaceAccessDeniedException;
+import com.dookia.teamflow.exception.WorkspaceAccessDeniedException;
 import com.dookia.teamflow.workspace.repository.WorkspaceMemberRepository;
 import com.dookia.teamflow.workspace.repository.WorkspaceRepository;
 import org.junit.jupiter.api.DisplayName;

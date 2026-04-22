@@ -1,4 +1,4 @@
-package com.dookia.teamflow.auth.exception;
+package com.dookia.teamflow.exception;
 
 import lombok.Getter;
 

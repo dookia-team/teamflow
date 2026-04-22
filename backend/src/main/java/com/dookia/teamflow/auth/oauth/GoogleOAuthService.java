@@ -1,8 +1,8 @@
 package com.dookia.teamflow.auth.oauth;
 
 import com.dookia.teamflow.auth.config.GoogleOAuthProperties;
-import com.dookia.teamflow.auth.exception.AuthErrorCode;
-import com.dookia.teamflow.auth.exception.AuthException;
+import com.dookia.teamflow.exception.AuthErrorCode;
+import com.dookia.teamflow.exception.AuthException;
 import com.dookia.teamflow.user.entity.UserProvider;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;

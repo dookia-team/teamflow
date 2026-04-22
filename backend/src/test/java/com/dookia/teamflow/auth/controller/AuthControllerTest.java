@@ -2,8 +2,8 @@ package com.dookia.teamflow.auth.controller;
 
 import com.dookia.teamflow.auth.config.JwtProperties;
 import com.dookia.teamflow.auth.dto.AuthDto;
-import com.dookia.teamflow.auth.exception.AuthErrorCode;
-import com.dookia.teamflow.auth.exception.AuthException;
+import com.dookia.teamflow.exception.AuthErrorCode;
+import com.dookia.teamflow.exception.AuthException;
 import com.dookia.teamflow.auth.service.AuthService;
 import com.dookia.teamflow.auth.service.JwtService;
 import com.dookia.teamflow.user.entity.User;
@@ -134,8 +134,9 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/refresh")
                 .cookie(new jakarta.servlet.http.Cookie("teamflow_rt", "reused-token")))
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error.code", equalTo("AUTH_TOKEN_REUSED")))
-            .andExpect(jsonPath("$.error.message", containsString("재사용")))
+            .andExpect(jsonPath("$.success", equalTo(false)))
+            .andExpect(jsonPath("$.code", equalTo("AUTH_TOKEN_REUSED")))
+            .andExpect(jsonPath("$.message", containsString("재사용")))
             .andExpect(jsonPath("$.timestamp").exists());
     }
 
