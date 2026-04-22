@@ -2,24 +2,18 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ticketApi } from '../api/ticketApi'
 import type { TicketStatus } from '@/entities/ticket'
 
-interface UpdateTicketParams {
+interface UpdateTicketStatusParams {
   ticketNo: number
   projectNo: number
-  data: {
-    title?: string
-    description?: string
-    status?: TicketStatus
-    priority?: string
-    assigneeNo?: number | null
-    dueDate?: string | null
-  }
+  status: TicketStatus
 }
 
-export function useUpdateTicket() {
+export function useUpdateTicketStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ ticketNo, data }: UpdateTicketParams) => ticketApi.update(ticketNo, data),
+    mutationFn: ({ ticketNo, status }: UpdateTicketStatusParams) =>
+      ticketApi.updateStatus(ticketNo, status),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tickets', variables.projectNo] })
     },

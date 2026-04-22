@@ -13,7 +13,7 @@ interface CreateTicketRequest {
 interface UpdateTicketRequest {
   title?: string
   description?: string
-  status?: string
+  status?: TicketStatus
   priority?: string
   assigneeNo?: number | null
   dueDate?: string | null

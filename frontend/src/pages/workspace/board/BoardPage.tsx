@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   DndContext,
@@ -13,11 +13,15 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useTickets, CreateTicketModal, TicketDetailPanel } from '@/features/ticket'
-import { ticketApi } from '@/features/ticket'
+import {
+  useTickets,
+  useUpdateTicketStatus,
+  useUpdateTicketPosition,
+  CreateTicketModal,
+  TicketDetailPanel,
+} from '@/features/ticket'
 import { Button, Badge, Spinner } from '@/shared/ui'
 import type { Ticket, TicketStatus } from '@/entities/ticket'
-import { useQueryClient } from '@tanstack/react-query'
 
 const columns: { status: TicketStatus; label: string }[] = [
   { status: 'BACKLOG', label: 'Backlog' },
@@ -25,6 +29,8 @@ const columns: { status: TicketStatus; label: string }[] = [
   { status: 'IN_PROGRESS', label: 'In Progress' },
   { status: 'DONE', label: 'Done' },
 ]
+
+const validStatuses = new Set<string>(columns.map((c) => c.status))
 
 const priorityColors: Record<string, 'danger' | 'warning' | 'primary' | 'success'> = {
   CRITICAL: 'danger',
@@ -37,10 +43,12 @@ export function BoardPage() {
   const { projectNo } = useParams<{ projectNo: string }>()
   const projNo = Number(projectNo)
   const { data: tickets, isLoading } = useTickets(projNo)
-  const queryClient = useQueryClient()
+  const updateStatus = useUpdateTicketStatus()
+  const updatePosition = useUpdateTicketPosition()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null)
+  const isDraggingRef = useRef(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -85,6 +93,7 @@ export function BoardPage() {
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
+      isDraggingRef.current = true
       const ticket = findTicketById(String(event.active.id))
       if (ticket) setActiveTicket(ticket)
     },
@@ -92,7 +101,10 @@ export function BoardPage() {
   )
 
   const handleDragEnd = useCallback(
-    async (event: DragEndEvent) => {
+    (event: DragEndEvent) => {
+      setTimeout(() => {
+        isDraggingRef.current = false
+      }, 0)
       setActiveTicket(null)
       const { active, over } = event
       if (!over || !tickets) return
@@ -107,8 +119,7 @@ export function BoardPage() {
       const overTicket = findTicketById(overId)
       if (overTicket) {
         targetStatus = overTicket.status
-      } else {
-        // Dropped on a column droppable
+      } else if (validStatuses.has(overId)) {
         targetStatus = overId as TicketStatus
       }
       if (!targetStatus) return
@@ -116,31 +127,28 @@ export function BoardPage() {
       const sourceStatus = activeTicketData.status
 
       if (sourceStatus !== targetStatus) {
-        // Cross-column move: update status
-        try {
-          await ticketApi.updateStatus(activeTicketData.no, targetStatus)
-          queryClient.invalidateQueries({ queryKey: ['tickets', projNo] })
-        } catch {
-          // rollback handled by React Query refetch
-        }
+        updateStatus.mutate({
+          ticketNo: activeTicketData.no,
+          projectNo: projNo,
+          status: targetStatus,
+        })
       } else if (activeId !== overId && overTicket) {
-        // Same column reorder: update position
         const columnTickets = getTicketsByStatus(sourceStatus)
         const overIndex = columnTickets.findIndex((t) => t.no === overTicket.no)
         if (overIndex >= 0) {
-          try {
-            await ticketApi.updatePosition(activeTicketData.no, overIndex)
-            queryClient.invalidateQueries({ queryKey: ['tickets', projNo] })
-          } catch {
-            // rollback handled by React Query refetch
-          }
+          updatePosition.mutate({
+            ticketNo: activeTicketData.no,
+            projectNo: projNo,
+            position: overIndex,
+          })
         }
       }
     },
-    [tickets, findTicketById, getTicketsByStatus, queryClient, projNo],
+    [tickets, findTicketById, getTicketsByStatus, updateStatus, updatePosition, projNo],
   )
 
   const handleTicketClick = useCallback((ticket: Ticket) => {
+    if (isDraggingRef.current) return
     setSelectedTicket(ticket)
   }, [])
 
