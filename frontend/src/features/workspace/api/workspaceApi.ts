@@ -2,7 +2,7 @@ import { apiClient } from '@/shared/api/apiClient'
 import type {
   CreateWorkspaceResponse,
   WorkspaceSummary,
-  Workspace,
+  WorkspaceDetail,
   InviteResponse,
 } from '@/entities/workspace'
 
@@ -12,7 +12,8 @@ export const workspaceApi = {
 
   list: () => apiClient.get<WorkspaceSummary[]>('/api/workspaces'),
 
-  getDetail: (workspaceNo: number) => apiClient.get<Workspace>(`/api/workspaces/${workspaceNo}`),
+  getDetail: (workspaceNo: number) =>
+    apiClient.get<WorkspaceDetail>(`/api/workspaces/${workspaceNo}`),
 
   invite: (workspaceNo: number, data: { inviteeUserNo: number; role: string }) =>
     apiClient.post<InviteResponse>(`/api/workspaces/${workspaceNo}/invite`, data),

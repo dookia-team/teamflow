@@ -1,10 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Badge } from '@/shared/ui'
+import type { WorkspaceMember } from '@/entities/workspace'
 
 interface WorkspaceSidebarProps {
   projectName: string
   workspaceNo: number
   projectNo: number
+  members: WorkspaceMember[]
 }
 
 const tabs = [
@@ -13,7 +15,18 @@ const tabs = [
   { id: 'chat', label: 'Chat', icon: '💬', enabled: false },
 ] as const
 
-export function WorkspaceSidebar({ projectName, workspaceNo, projectNo }: WorkspaceSidebarProps) {
+const roleLabels: Record<string, string> = {
+  OWNER: '오너',
+  ADMIN: '관리자',
+  MEMBER: '멤버',
+}
+
+export function WorkspaceSidebar({
+  projectName,
+  workspaceNo,
+  projectNo,
+  members,
+}: WorkspaceSidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -38,7 +51,7 @@ export function WorkspaceSidebar({ projectName, workspaceNo, projectNo }: Worksp
       </div>
 
       {/* Tabs */}
-      <nav className="flex-1 p-3">
+      <nav className="p-3">
         <ul className="space-y-1">
           {tabs.map((tab) => (
             <li key={tab.id}>
@@ -65,6 +78,26 @@ export function WorkspaceSidebar({ projectName, workspaceNo, projectNo }: Worksp
           ))}
         </ul>
       </nav>
+
+      {/* Members */}
+      <div className="border-t border-gray-100 p-3 mt-auto">
+        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
+          멤버 ({members.length})
+        </h3>
+        <ul className="space-y-1">
+          {members.map((member) => (
+            <li key={member.no} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+              <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">
+                {member.userNo}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-700 text-sm truncate">User {member.userNo}</p>
+                <p className="text-gray-400 text-xs">{roleLabels[member.role] ?? member.role}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </aside>
   )
 }

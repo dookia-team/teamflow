@@ -36,6 +36,7 @@ export function WorkspaceLayout() {
         projectName={currentProject.name}
         workspaceNo={workspaceNo}
         projectNo={projNo}
+        members={workspace.members}
       />
       <main className="flex-1 overflow-auto bg-gray-50">
         <Outlet />
