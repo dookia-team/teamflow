@@ -21,23 +21,12 @@ import {
   TicketDetailPanel,
 } from '@/features/ticket'
 import { Button, Badge, Spinner } from '@/shared/ui'
+import { STATUS_OPTIONS, PRIORITY_COLORS } from '@/entities/ticket'
 import type { Ticket, TicketStatus } from '@/entities/ticket'
 
-const columns: { status: TicketStatus; label: string }[] = [
-  { status: 'BACKLOG', label: 'Backlog' },
-  { status: 'TODO', label: 'To Do' },
-  { status: 'IN_PROGRESS', label: 'In Progress' },
-  { status: 'DONE', label: 'Done' },
-]
+const columns = STATUS_OPTIONS
 
-const validStatuses = new Set<string>(columns.map((c) => c.status))
-
-const priorityColors: Record<string, 'danger' | 'warning' | 'primary' | 'success'> = {
-  CRITICAL: 'danger',
-  HIGH: 'warning',
-  MEDIUM: 'primary',
-  LOW: 'success',
-}
+const validStatuses = new Set<string>(columns.map((c) => c.value))
 
 export function BoardPage() {
   const { projectNo } = useParams<{ projectNo: string }>()
@@ -77,7 +66,7 @@ export function BoardPage() {
     }
     if (!tickets) return result
     for (const col of columns) {
-      result[col.status] = getTicketsByStatus(col.status).map((t) => `ticket-${t.no}`)
+      result[col.value] = getTicketsByStatus(col.value).map((t) => `ticket-${t.no}`)
     }
     return result
   }, [tickets, getTicketsByStatus])
@@ -177,14 +166,14 @@ export function BoardPage() {
       >
         <div className="flex-1 flex gap-4 p-6 overflow-x-auto">
           {columns.map((col) => {
-            const columnTickets = getTicketsByStatus(col.status)
+            const columnTickets = getTicketsByStatus(col.value)
             return (
               <KanbanColumn
-                key={col.status}
-                status={col.status}
+                key={col.value}
+                status={col.value}
                 label={col.label}
                 tickets={columnTickets}
-                ticketIds={ticketIdsByColumn[col.status]}
+                ticketIds={ticketIdsByColumn[col.value]}
                 onTicketClick={handleTicketClick}
               />
             )
@@ -290,7 +279,7 @@ function TicketCardContent({ ticket }: { ticket: Ticket }) {
     <div className="bg-white rounded-lg border border-grey-200 p-3 hover:shadow-sm transition-shadow cursor-pointer">
       <div className="flex items-start justify-between mb-2">
         <span className="text-xs text-grey-500 font-medium">{ticket.ticketKey}</span>
-        <Badge variant={priorityColors[ticket.priority] ?? 'default'} size="xs">
+        <Badge variant={PRIORITY_COLORS[ticket.priority] ?? 'default'} size="xs">
           {ticket.priority}
         </Badge>
       </div>

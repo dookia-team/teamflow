@@ -18,6 +18,8 @@ interface ToastStore {
   info: (message: string) => void
 }
 
+const TOAST_AUTO_DISMISS_MS = 3000
+
 let nextId = 0
 
 export const useToastStore = create<ToastStore>((set) => ({
@@ -28,7 +30,7 @@ export const useToastStore = create<ToastStore>((set) => ({
     set((state) => ({ toasts: [...state.toasts, { id, message, type }] }))
     setTimeout(() => {
       set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }))
-    }, 3000)
+    }, TOAST_AUTO_DISMISS_MS)
   },
 
   remove: (id) => {
